@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Initializing…</title>
+  <style>
+    :root{
+      --bg1: #0f172a; /* slate-900 */
+      --bg2: #1f2937; /* gray-800 */
+      --txt:#e5e7eb;  /* gray-200 */
+      --muted:#9ca3af;/* gray-400 */
+      --accent:#6366f1;/* indigo-500 */
+      --accent2:#22d3ee;/* cyan-400 */
+    }
+    html,body{height:100%;}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      color:var(--txt);
+      background: radial-gradient(1200px 800px at 10% 10%, rgba(99,102,241,.25), transparent 60%),
+                  radial-gradient(1000px 600px at 90% 30%, rgba(34,211,238,.18), transparent 60%),
+                  linear-gradient(180deg, var(--bg1), var(--bg2));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .wrap{
+      width:min(92vw, 720px);
+      text-align:center;
+    }
+    .card{
+      position:relative;
+      padding:40px 28px 32px;
+      border-radius:24px;
+      background:rgba(255,255,255,0.03);
+      backdrop-filter:saturate(140%) blur(10px);
+      box-shadow:0 10px 40px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.06);
+    }
+    .logo{
+      width:96px; height:96px; object-fit:contain; margin:0 auto 12px; display:block; filter:drop-shadow(0 8px 12px rgba(0,0,0,.35));
+    }
+    h1{
+      font-size:clamp(18px, 2.8vw, 24px);
+      margin:0 0 4px 0;
+      letter-spacing:.2px;
+      font-weight:700;
+    }
+    p.sub{
+      margin:0 0 18px 0;
+      color:var(--muted);
+      font-size:clamp(13px,2.2vw,15px);
+    }
+    /* Spinner */
+    .spinner{ margin:18px auto 20px; width:56px; height:56px; position:relative; }
+    .spinner:before, .spinner:after{
+      content:""; position:absolute; inset:0; border-radius:50%; border:4px solid transparent;
+    }
+    .spinner:before{ border-top-color:var(--accent); animation:spin 1.1s linear infinite; }
+    .spinner:after { border-left-color:var(--accent2); animation:spin 0.9s linear infinite reverse; }
+    @keyframes spin{ to{ transform:rotate(360deg);} }
+
+    /* Countdown Clock */
+    .clock{
+      width:140px; height:140px; margin:0 auto 8px; position:relative;
+    }
+    .clock svg{ display:block; width:100%; height:100%; }
+    .tick{
+      position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:800;
+    }
+    .muted{ color:var(--muted); font-size:13px; }
+
+    .btn-skip{ display:inline-block; margin-top:10px; font-size:12px; color:var(--muted); text-decoration:none; border-bottom:1px dashed rgba(156,163,175,.4); }
+    .btn-skip:hover{ color:#fff; }
+
+    @media (prefers-reduced-motion: reduce){
+      .spinner:before, .spinner:after{ animation:none; border-top-color:var(--accent); border-left-color:var(--accent2); }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="card" role="status" aria-live="polite">
+      <!-- Optional Logo: put your logo.png in the same folder. It will hide automatically if missing. -->
+      <img class="logo" src="logo.png" alt="App Logo" onerror="this.style.display='none'"/>
+
+      <h1>Loading APIs for the application!</h1>
+      <p class="sub">Thanks for using our Apps, hope that you will love the journey with us!</p>
+
+      <div class="spinner" aria-hidden="true"></div>
+
+      <div class="clock" aria-label="Countdown clock">
+        <svg viewBox="0 0 120 120" aria-hidden="true">
+          <defs>
+            <linearGradient id="g">
+              <stop offset="0%" stop-color="var(--accent)"/>
+              <stop offset="100%" stop-color="var(--accent2)"/>
+            </linearGradient>
+          </defs>
+          <circle cx="60" cy="60" r="56" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.08)" stroke-width="2" />
+          <!-- progress ring -->
+          <circle id="ring" cx="60" cy="60" r="54" fill="none" stroke="url(#g)" stroke-width="6" stroke-linecap="round"
+                  stroke-dasharray="339.292" stroke-dashoffset="0" />
+          <!-- center dot -->
+          <circle cx="60" cy="60" r="3" fill="#fff" opacity=".9" />
+          <!-- hand -->
+          <line id="hand" x1="60" y1="60" x2="60" y2="16" stroke="#fff" stroke-width="2.5" stroke-linecap="round" opacity=".9"/>
+        </svg>
+        <div class="tick"><span id="secs">5</span>s</div>
+      </div>
+      <div class="muted" id="hint">Please wait for while...</div>
+
+      <a class="btn-skip" href="https://www.google.com" rel="nofollow noopener">Skip now</a>
+    </section>
+  </main>
+
+  <script>
+    (function(){
+      const total = 5; // seconds
+      const start = Date.now();
+      const hand = document.getElementById('hand');
+      const ring = document.getElementById('ring');
+      const secs = document.getElementById('secs');
+      const C = 2 * Math.PI * 54; // circumference for r=54
+      ring.style.strokeDasharray = C.toFixed(3);
+
+      function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
+
+      const raf = window.requestAnimationFrame || function(fn){ return setTimeout(fn, 1000/30); };
+
+      function tick(){
+        const elapsed = (Date.now() - start) / 1000;
+        const remain = clamp(total - elapsed, 0, total);
+        const pct = 1 - (remain / total);
+
+        // numeric
+        secs.textContent = Math.ceil(remain).toString();
+
+        // hand rotation (0 -> 360)
+        const angle = pct * 360;
+        hand.setAttribute('transform', `rotate(${angle} 60 60)`);
+
+        // ring progress (full -> 0)
+        ring.style.strokeDashoffset = (C * pct).toFixed(2);
+
+        if(remain > 0){ raf(tick); }
+      }
+
+      tick();
+
+      // Redirect after 5s
+      setTimeout(function(){
+        window.location.replace('https://www.google.com');
+      }, total * 1000);
+    })();
+  </script>
+</body>
+</html>
