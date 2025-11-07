@@ -1,0 +1,19 @@
+{
+  "name": "server_b12a10_ea",
+  "version": "1.0.1",
+  "description": "Express Server for PH Assignment 10",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Efthaqur Alam",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "mongodb": "^7.0.0"
+  }
+}
