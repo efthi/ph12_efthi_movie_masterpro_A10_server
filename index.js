@@ -69,7 +69,7 @@ async function run() {
         
         //ডেটা নিয়ে আসা
         app.get('/allmoviedata', async (req,res)=>{
-            const packet = movieData.find();
+            const packet = movieData.find();  //packet জাস্ট নাম দেওয়া হয়েছে
             const result = await packet.toArray();
             res.send(result);
         });
