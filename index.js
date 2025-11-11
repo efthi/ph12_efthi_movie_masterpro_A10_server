@@ -99,6 +99,22 @@ async function run() {
             res.send(result);
         });
 
+        //Update করার API
+        app.patch('/editmoviedetails/:id', async (req, res) => {
+            const id= req.params.id;
+            const updatedMovieData = req.body;
+            const query = { _id: new ObjectId(id) };
+            const update = {
+                $set : {
+                    ...updatedMovieData
+                }
+            }
+            const options = {};
+            const result = await movieData.updateOne(query, update, options);
+            console.log('serv: ', query, update);
+            console.log('res:', result);
+            res.send(result);
+        });
         
     } 
     finally {
