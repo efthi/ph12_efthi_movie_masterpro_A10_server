@@ -1,7 +1,3 @@
-ঝামেলা ছাড়াই কপি–পেস্ট করার জন্য **Server README** নিচে দিলাম (আগেরটার স্টাইলেই)। এই রিপোটা **Movie Master Pro (Assignment 10, PH Batch–12)**-এর Express.js ব্যাকএন্ড।
-
----
-
 ````markdown
 # Movie Master Pro — Server (Express.js)
 
@@ -194,6 +190,6 @@ ISC
 
 ```
 
-আপনি চাইলে আমি এই README-টা ইংরেজি-অনলি বা বাংলা-অনলি স্টাইলে, আর আপনার প্রকৃত রুট/ফোল্ডার স্ট্রাকচার অনুযায়ী **ফাইন-টিউন** করে দিই—শুধু `index.js` (বা রুট ফাইলগুলো) একবার শেয়ার করুন।
+
 ::contentReference[oaicite:0]{index=0}
 ```
