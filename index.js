@@ -86,12 +86,18 @@ async function run() {
         app.get('/moviedetails/:id', async (req, res)=>{
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
-            console.log('q: ',query);
-             const result = await movieData.findOne(query);
+            const result = await movieData.findOne(query);
             res.send(result);
          
         });
         
+        //Delete করার API
+        app.delete('/moviedetails/:id', async (req, res)=>{
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id)} ;
+            const result = await movieData.deleteOne(query);
+            res.send(result);
+        });
 
         
     } 
