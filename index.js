@@ -42,7 +42,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 /**================================================================ */
 
 //MongoDB এর কাজ শুরু, প্রথমে MongoDB import করবো
-const {MongoClient, ServerApiVersion } = require('mongodb');
+const {MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 //mongoDB এর URI সেট করা হলো .env থেকে
 const uri = process.env.MONGODB_URI;
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -74,6 +74,7 @@ async function run() {
             res.send(result);
         });
 
+        //Data POST
         app.post('/addmovie', async (req,res)=>{
             const newMovie = req.body;
             console.log(newMovie);
@@ -81,6 +82,15 @@ async function run() {
             res.send(result);
         });
 
+        //GET Single Data
+        app.get('/moviedetails/:id', async (req, res)=>{
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            console.log('q: ',query);
+             const result = await movieData.findOne(query);
+            res.send(result);
+         
+        });
         
 
         
