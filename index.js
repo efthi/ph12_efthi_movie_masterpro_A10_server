@@ -99,10 +99,11 @@ async function run() {
             res.send(result);
         });
 
-        //Update করার API
+        //Update করার API (একটু বোঝার আছে এটা)
         app.patch('/editmoviedetails/:id', async (req, res) => {
             const id= req.params.id;
             const updatedMovieData = req.body;
+                    
             const query = { _id: new ObjectId(id) };
             const update = {
                 $set : {
@@ -115,7 +116,16 @@ async function run() {
             console.log('res:', result);
             res.send(result);
         });
-        
+       
+         //ডেটা নিয়ে আসা mycollection
+        app.get('/mycollectiondata', async (req,res)=>{
+            const email = req.query.email;
+            const query = {addedBy : email.toLowerCase()};
+            const cursor = movieData.find(query);  //cursor জাস্ট নাম দেওয়া হয়েছে
+            const result = await cursor.toArray();
+            res.send(result);
+        });
+
     } 
     finally {
        // await client.close();
