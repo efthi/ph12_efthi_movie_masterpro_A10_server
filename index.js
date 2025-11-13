@@ -126,6 +126,229 @@ async function run() {
             res.send(result);
         });
 
+        /* ===================== WISHLIST TOGGLE ===================== */
+    app.post('/wishlist/toggle', async (req, res) => {
+      try {
+        const { email, movieId } = req.body;
+
+        if (!email || !movieId) {
+          return res.status(400).send({
+            success: false,
+            message: 'email আর movieId লাগবে',
+          });
+        }
+
+        const userEmail = email.toLowerCase();
+        const userQuery = { email: userEmail };
+
+        // user আছে কিনা দেখি
+        let user = await userData.findOne(userQuery);
+
+        // যদি না থাকে, নতুন ইউজার বানিয়ে সরাসরি wishlist এ add করব
+        if (!user) {
+          const newUser = {
+            email: userEmail,
+            wishlist: [movieId],
+          };
+          await userData.insertOne(newUser);
+
+          return res.send({
+            success: true,
+            status: 'added',
+            wishlist: newUser.wishlist,
+          });
+        }
+
+        const currentWishlist = user.wishlist || [];
+        const alreadyInList = currentWishlist.includes(movieId);
+        let status = 'added';
+
+        if (alreadyInList) {
+          // থাকলে remove করব
+          await userData.updateOne(
+            userQuery,
+            { $pull: { wishlist: movieId } }
+          );
+          status = 'removed';
+        } else {
+          // না থাকলে add করব
+          await userData.updateOne(
+            userQuery,
+            { $addToSet: { wishlist: movieId } }
+          );
+        }
+
+        // আপডেট হওয়া user আবার নিয়ে আসি 
+        const updatedUser = await userData.findOne(userQuery);
+
+        res.send({
+          success: true,
+          status, // 'added' বা 'removed'
+          wishlist: updatedUser.wishlist || [],
+        });
+      } catch (error) {
+        console.error('Wishlist toggle error:', error);
+        res.status(500).send({
+          success: false,
+          message: 'Server error (wishlist toggle)',
+        });
+      }
+    });
+
+    app.post('/registerUser', async (req, res) => {
+  try {
+    const { email, name } = req.body;
+
+    if (!email) {
+      return res.status(400).send({
+        success: false,
+        message: 'email লাগবে',
+      });
+    }
+
+    const userEmail = email.toLowerCase();
+
+    // আগে আছে কিনা দেখি
+    const existing = await userData.findOne({ email: userEmail });
+
+    if (!existing) {
+      // নতুন ইউজার ডকুমেন্ট
+      const newUser = {
+        email: userEmail,
+        name: name || '',
+        wishlist: [],        // future use
+      };
+      await userData.insertOne(newUser);
+    } else {
+      // আগেই থাকলে শুধু নাম আপডেট করতেও পারো
+      await userData.updateOne(
+        { email: userEmail },
+        { $set: { name: name || existing.name || '' } }
+      );
+    }
+
+    res.send({ success: true });
+  } catch (error) {
+    console.error('registerUser error:', error);
+    res.status(500).send({
+      success: false,
+      message: 'Server error while registering user',
+    });
+  }
+});
+
+
+    /* ========= মোট Movie আর মোট User count দেখানোর জন্য API ========= */
+    app.get('/stats', async (req, res) => {
+    try {
+        // সব movie ডকুমেন্ট গুনব
+        const totalMovies = await movieData.countDocuments({});
+
+        // সব user ডকুমেন্ট গুনব (userData collection এ)
+        const totalUsers = await userData.countDocuments({});
+
+        res.send({
+        success: true,
+        totalMovies,
+        totalUsers,
+        });
+    } catch (error) {
+        console.error('Stats error:', error);
+        res.status(500).send({
+        success: false,
+        message: 'Server error while getting stats',
+        });
+    }
+    });
+
+    /* ===================== WISHLIST LIST (GET) ===================== */
+    app.get('/wishlist', async (req, res) => {
+      try {
+        const email = req.query.email;
+
+        if (!email) {
+          return res.status(400).send({
+            success: false,
+            message: 'email query parameter লাগবে',
+          });
+        }
+
+        const userEmail = email.toLowerCase();
+        const user = await userData.findOne({ email: userEmail });
+
+        // যদি user না থাকে বা wishlist ফাঁকা থাকে
+        if (!user || !user.wishlist || user.wishlist.length === 0) {
+          return res.send({
+            success: true,
+            movies: [],
+          });
+        }
+
+        // wishlist এ string আকারে যেসব movieId আছে, সেগুলো ObjectId এ convert
+        const ids = user.wishlist.map((id) => new ObjectId(id));
+
+        const cursor = movieData.find({ _id: { $in: ids } });
+        const movies = await cursor.toArray();
+
+        res.send({
+          success: true,
+          movies,
+        });
+      } catch (error) {
+        console.error('Wishlist get error:', error);
+        res.status(500).send({
+          success: false,
+          message: 'Server error (wishlist get)',
+        });
+      }
+    });
+
+    //
+    app.post('/registerUser', async (req, res) => {
+        try {
+            const { email, name } = req.body;
+
+            if (!email) {
+            return res.status(400).send({
+                success: false,
+                message: 'email লাগবে',
+            });
+            }
+
+            const userEmail = email.toLowerCase();
+
+            // আগে আছে কিনা দেখি
+            const existing = await userData.findOne({ email: userEmail });
+
+            if (!existing) {
+            // নতুন ইউজার ডকুমেন্ট
+            const newUser = {
+                email: userEmail,
+                name: name || '',
+                wishlist: [],        // future use
+            };
+            await userData.insertOne(newUser);
+            } else {
+            // আগেই থাকলে শুধু নাম আপডেট করতেও পারো
+            await userData.updateOne(
+                { email: userEmail },
+                { $set: { name: name || existing.name || '' } }
+            );
+            }
+
+            res.send({ success: true });
+        } catch (error) {
+            console.error('registerUser error:', error);
+            res.status(500).send({
+            success: false,
+            message: 'Server error while registering user',
+            });
+        }
+    });
+
+
+   
+
     } 
     finally {
        // await client.close();
